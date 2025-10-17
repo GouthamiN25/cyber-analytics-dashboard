@@ -1,0 +1,168 @@
+/* =========================
+   Cyber Analytics – styles
+   Works alongside Tailwind
+   (link after the Tailwind CDN)
+   ========================= */
+
+/* ---------- THEME ---------- */
+:root {
+  --page-bg:  #f8fafc;   /* page background */
+  --card-bg:  #ffffff;   /* card background */
+  --ink:      #0f172a;   /* main text */
+  --muted:    #64748b;   /* secondary text */
+  --primary:  #0ea5a4;   /* accent */
+  --primary2: #0f766e;   /* accent (dark) */
+
+  /* chart accent set */
+  --sev-critical: #ef4444; /* red-500 */
+  --sev-high:     #f59e0b; /* amber-500 */
+  --sev-medium:   #3b82f6; /* blue-500 */
+  --sev-low:      #94a3b8; /* slate-400 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg:  #0b1220;
+    --card-bg:  #0f172a;
+    --ink:      #e5e7eb;
+    --muted:    #94a3b8;
+    --primary:  #14b8a6;
+    --primary2: #0ea5a4;
+  }
+}
+
+/* ---------- BASE ---------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Better focus ring for keyboard users (works with Tailwind classes too) */
+:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 70%, white);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ---------- TYPOGRAPHY ---------- */
+h1, h2, h3 {
+  letter-spacing: -0.01em;
+}
+h1 {
+  color: var(--primary2);
+}
+h3 {
+  color: var(--primary2);
+}
+
+/* ---------- CARDS & SURFACES ---------- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in oklab, var(--ink) 8%, transparent);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.03),
+    0 8px 24px rgba(0,0,0,0.04);
+}
+
+/* KPI number */
+.kpi-value {
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--ink);
+}
+.kpi-subtle {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* ---------- BUTTONS ---------- */
+.btn {
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0.5rem 0.9rem;
+  font-weight: 600;
+  transition: background 160ms ease, transform 80ms ease, box-shadow 160ms ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--primary2);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn--ghost {
+  background: color-mix(in oklab, var(--primary) 10%, white);
+  color: var(--primary2);
+}
+
+/* ---------- FORMS ---------- */
+input[type="date"],
+select {
+  background: var(--card-bg);
+  color: var(--ink);
+  border: 1px solid color-mix(in oklab, var(--ink) 10%, transparent);
+  border-radius: 12px;
+  padding: 0.45rem 0.6rem;
+  outline: none;
+}
+input[type="date"]::placeholder {
+  color: var(--muted);
+}
+
+/* ---------- CHARTS (Chart.js canvas) ---------- */
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* legend buttons inside card headers */
+.chart-actions button {
+  background: #f1f5f9;          /* slate-100 */
+  color: var(--ink);
+  border: 1px solid #e2e8f0;     /* slate-200 */
+  border-radius: 8px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+.chart-actions button:hover {
+  background: #e2e8f0;
+}
+
+/* ---------- UTIL OVERRIDES (with Tailwind) ---------- */
+/* Ensure max width containers are centered consistently */
+.max-w-7xl {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Reduce extra spacing on small screens */
+@media (max-width: 420px) {
+  .card { border-radius: 14px; }
+  .btn  { border-radius: 10px; }
+  h1 { font-size: 1.7rem; }
+}
+
+/* ---------- PRINT (optional) ---------- */
+@media print {
+  .btn,
+  .chart-actions { display: none !important; }
+  body { background: #fff; }
+  .card { box-shadow: none; border-color: #ddd; }
+}
+
