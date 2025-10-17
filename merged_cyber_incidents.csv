@@ -1,0 +1,7 @@
+timestamp,severity,mttr_hours,financial_impact,emp_department
+2025-01-05,High,12,15,Security
+2025-01-12,Critical,30,50,IT
+2025-02-03,Medium,6,5,Finance
+2025-02-15,Low,2,0,HR
+2025-03-01,High,18,10,Security
+2025-03-20,Medium,8,3,Operations
