@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Cyber Analytics — Threat Insights</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','Segoe UI','Roboto','Helvetica Neue','Arial'] }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    :root{
+      /* ===== THEME — tweak here ===== */
+      --page-bg:  #f8fafc;
+      --card-bg:  #ffffff;
+      --ink:      #0f172a;
+      --muted:    #64748b;
+      --primary:  #0ea5a4;  /* accent */
+      --primary2: #0f766e;  /* accent dark */
+      --red:      #ef4444;
+      --amber:    #f59e0b;
+      --blue:     #3b82f6;
+      --slate:    #94a3b8;
+    }
+    body { background: var(--page-bg); color: var(--ink); }
+    .card { background: var(--card-bg); }
+    .btn { background: var(--primary); color: #fff; }
+    .btn:hover { background: var(--primary2); }
+  </style>
+</head>
+<body class="font-sans">
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto px-6 pt-8 pb-4">
+    <h1 class="text-3xl md:text-4xl font-bold" style="color: var(--primary2)">Cyber Analytics — Threat Insights</h1>
+    <p class="text-sm md:text-base mt-2" style="color: var(--muted)">Professional dashboard with incident statistics, trends, and risk indicators.</p>
+  </header>
+
+  <!-- Layout -->
+  <main class="max-w-7xl mx-auto px-6 pb-12 grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Sidebar Filters -->
+    <aside class="card rounded-2xl shadow-sm border border-slate-100 p-4 lg:col-span-1">
+      <h3 class="font-semibold mb-3" style="color: var(--primary2)">Filters</h3>
+
+      <label class="text-sm text-slate-600">Severity</label>
+      <select id="severitySel" class="w-full mt-1 mb-3 rounded-xl border-slate-300 focus:ring-0">
+        <option>All</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
+      </select>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm text-slate-600">From</label>
+          <input id="fromDt" type="date" class="w-full mt-1 rounded-xl border-slate-300 focus:ring-0" />
+        </div>
+        <div>
+          <label class="text-sm text-slate-600">To</label>
+          <input id="toDt" type="date" class="w-full mt-1 rounded-xl border-slate-300 focus:ring-0" />
+        </div>
+      </div>
+
+      <button id="resetBtn" class="btn w-full mt-4 rounded-xl px-4 py-2">Reset Filters</button>
+      <p class="text-xs mt-3" style="color: var(--muted)">Filters apply to all KPIs and charts.</p>
+
+      <hr class="my-4 border-slate-200" />
+      <div class="text-xs" style="color: var(--muted)">
+        <p><strong>Data:</strong> <code>/data/merged_cyber_incidents.csv</code></p>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <section class="lg:col-span-3 grid gap-6">
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4">
+          <p class="text-xs" style="color: var(--muted)">Total Incidents</p>
+          <p id="kpiTotal" class="text-2xl font-semibold mt-1">—</p>
+        </div>
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4">
+          <p class="text-xs" style="color: var(--muted)">High/Critical</p>
+          <p id="kpiHC" class="text-2xl font-semibold mt-1">—</p>
+        </div>
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4">
+          <p class="text-xs" style="color: var(--muted)">Avg MTTR (hrs)</p>
+          <p id="kpiMTTR" class="text-2xl font-semibold mt-1">—</p>
+        </div>
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4">
+          <p class="text-xs" style="color: var(--muted)">Financial Impact (K)</p>
+          <p id="kpiImpact" class="text-2xl font-semibold mt-1">—</p>
+        </div>
+      </div>
+
+      <!-- Charts row 1 -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4 md:p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold" style="color: var(--primary2)">Incidents by Severity</h3>
+            <button class="text-xs px-2 py-1 rounded bg-slate-100" onclick="downloadChart('severity')">Download PNG</button>
+          </div>
+          <canvas id="chartSeverity" height="280"></canvas>
+        </div>
+
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4 md:p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold" style="color: var(--primary2)">Incidents Over Time</h3>
+            <button class="text-xs px-2 py-1 rounded bg-slate-100" onclick="downloadChart('monthly')">Download PNG</button>
+          </div>
+          <canvas id="chartMonthly" height="280"></canvas>
+        </div>
+      </div>
+
+      <!-- Charts row 2 -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4 md:p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold" style="color: var(--primary2)">MTTR Distribution (hrs)</h3>
+            <button class="text-xs px-2 py-1 rounded bg-slate-100" onclick="downloadChart('mttr')">Download PNG</button>
+          </div>
+          <canvas id="chartMTTR" height="280"></canvas>
+        </div>
+
+        <div class="card rounded-2xl shadow-sm border border-slate-100 p-4 md:p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold" style="color: var(--primary2)">Severity by Month (stacked)</h3>
+            <button class="text-xs px-2 py-1 rounded bg-slate-100" onclick="downloadChart('stacked')">Download PNG</button>
+          </div>
+          <canvas id="chartStacked" height="280"></canvas>
+        </div>
+      </div>
+
+      <!-- Wide chart -->
+      <div class="card rounded-2xl shadow-sm border border-slate-100 p-4 md:p-5 md:col-span-2">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold" style="color: var(--primary2)">Top Departments by Incident Count</h3>
+          <button class="text-xs px-2 py-1 rounded bg-slate-100" onclick="downloadChart('dept')">Download PNG</button>
+        </div>
+        <canvas id="chartDept" height="320"></canvas>
+      </div>
+
+      <!-- Notes -->
+      <div class="card rounded-2xl shadow-sm border border-slate-100 p-4 md:p-5">
+        <h3 class="font-semibold mb-2" style="color: var(--primary2)">Notes</h3>
+        <ul class="text-sm" style="color: var(--muted)">
+          <li>Client-side CSV parsing (no backend required).</li>
+          <li>Adjust your CSV field names in the script’s <strong>FIELDS</strong> map.</li>
+          <li>Change colors by editing CSS variables: <strong>--primary</strong> / <strong>--primary2</strong>.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="max-w-7xl mx-auto px-6 py-10 text-xs" style="color: var(--muted)">
+    © <span id="year"></span> • Cyber Analytics Dashboard (demo)
+  </footer>
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ================= FIELD MAP =================
+       Edit these to match your CSV header names.
+       If a field has multiple possible names, list them all.
+    */
+    const FIELDS = {
+      DATE:        ["timestamp", "discovered_at", "date"],
+      SEVERITY:    ["severity"],
+      MTTR_HOURS:  ["time_to_resolve_hours", "mttr_hours"],
+      IMPACT:      ["financial_impact_k", "financial_impact"],
+      DEPARTMENT:  ["emp_department", "asset_owner_department", "department"]
+    };
+
+    const CSV_URL = "/data/merged_cyber_incidents.csv"; // file should live under public/data/
+
+    // Helpers
+    const getField = (row, keys) => {
+      for (const k of keys) if (row[k] !== undefined && row[k] !== "") return row[k];
+      return undefined;
+    };
+    const toDate = v => v ? new Date(v) : null;
+    const pretty = n => new Intl.NumberFormat().format(Number(n || 0));
+    const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+    // State
+    let allRows = [];
+    let charts = { severity: null, monthly: null, dept: null, mttr: null, stacked: null };
+
+    // Elements
+    const elSeverity = document.getElementById('severitySel');
+    const elFrom = document.getElementById('fromDt');
+    const elTo = document.getElementById('toDt');
+    const elReset = document.getElementById('resetBtn');
+
+    // Load CSV then init
+    Papa.parse(CSV_URL, {
+      header: true, download: true, skipEmptyLines: true,
+      complete: (res) => { allRows = res.data || []; render(); },
+      error: (e) => { console.error("CSV load error:", e); alert("Could not load CSV. Check /data/merged_cyber_incidents.csv"); }
+    });
+
+    // Events
+    elSeverity.addEventListener('change', render);
+    elFrom.addEventListener('change', render);
+    elTo.addEventListener('change', render);
+    elReset.addEventListener('click', () => { elSeverity.value="All"; elFrom.value=""; elTo.value=""; render(); });
+
+    function filteredRows() {
+      const sevFilter = elSeverity.value;
+      const from = elFrom.value ? new Date(elFrom.value) : null;
+      const to = elTo.value ? new Date(elTo.value + "T23:59:59") : null;
+
+      return allRows.filter(r => {
+        const sev = String(getField(r, FIELDS.SEVERITY) || "").toLowerCase();
+        const sevOK = (sevFilter === "All") || sev === sevFilter.toLowerCase();
+
+        const d = toDate(getField(r, FIELDS.DATE));
+        const fromOK = from ? (d && d >= from) : true;
+        const toOK = to ? (d && d <= to) : true;
+
+        return sevOK && fromOK && toOK;
+      });
+    }
+
+    function render() {
+      const rows = filteredRows();
+
+      // KPIs
+      const total = rows.length;
+      const hc = rows.filter(r => {
+        const s = String(getField(r, FIELDS.SEVERITY) || "").toLowerCase();
+        return s === "high" || s === "critical";
+      }).length;
+      const pctHC = total ? Math.round((hc / total) * 100) : 0;
+
+      const mttr = rows.map(r => Number(getField(r, FIELDS.MTTR_HOURS))).filter(Number.isFinite);
+      const avgMttr = mttr.length ? (mttr.reduce((a,b)=>a+b,0) / mttr.length) : 0;
+
+      const impacts = rows.map(r => Number(getField(r, FIELDS.IMPACT))).filter(Number.isFinite);
+      const totalImpactK = impacts.reduce((a,b)=>a+b,0);
+
+      document.getElementById('kpiTotal').textContent  = pretty(total);
+      document.getElementById('kpiHC').textContent     = pctHC + "%";
+      document.getElementById('kpiMTTR').textContent   = (Math.round(avgMttr*10)/10).toFixed(1);
+      document.getElementById('kpiImpact').textContent = pretty(Math.round(totalImpactK));
+
+      // ------- Severity doughnut -------
+      const sevCounts = {};
+      rows.forEach(r => {
+        const s = String(getField(r, FIELDS.SEVERITY) || "unknown").toLowerCase();
+        sevCounts[s] = (sevCounts[s] || 0) + 1;
+      });
+      const sevOrder = ["critical","high","medium","low","unknown"];
+      const sevLabels = [], sevValues = [];
+      sevOrder.forEach(k => { if (sevCounts[k]) { sevLabels.push(cap(k)); sevValues.push(sevCounts[k]); }});
+
+      // ------- Monthly line -------
+      const monthMap = {};
+      rows.forEach(r => {
+        const d = toDate(getField(r, FIELDS.DATE));
+        if (!d || isNaN(d)) return;
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+        monthMap[key] = (monthMap[key] || 0) + 1;
+      });
+      const monthlyLabels = Object.keys(monthMap).sort();
+      const monthlyValues = monthlyLabels.map(k => monthMap[k]);
+
+      // ------- MTTR histogram (binning) -------
+      const bins = [0,4,8,12,24,48,72,96,120,200]; // hours
+      const binLabels = bins.slice(0,-1).map((b,i)=>`${b}–${bins[i+1]}`);
+      const binCounts = new Array(binLabels.length).fill(0);
+      mttr.forEach(v => {
+        for (let i=0;i<bins.length-1;i++){
+          if (v >= bins[i] && v < bins[i+1]) { binCounts[i]++; break; }
+        }
+      });
+
+      // ------- Stacked severity by month -------
+      const sevKeys = ["low","medium","high","critical"];
+      const stackedMap = {}; // {month:{low:x,medium:y,...}}
+      rows.forEach(r => {
+        const d = toDate(getField(r, FIELDS.DATE));
+        if (!d || isNaN(d)) return;
+        const m = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+        const s = String(getField(r, FIELDS.SEVERITY) || "unknown").toLowerCase();
+        if (!stackedMap[m]) stackedMap[m] = {low:0,medium:0,high:0,critical:0};
+        if (stackedMap[m][s] !== undefined) stackedMap[m][s] += 1;
+      });
+      const stackedLabels = Object.keys(stackedMap).sort();
+      const stackedDatasets = sevKeys.map(k => ({
+        label: cap(k),
+        data: stackedLabels.map(m => stackedMap[m][k] || 0),
+        backgroundColor: ({low:"var(--slate)",medium:"var(--blue)",high:"var(--amber)",critical:"var(--red)"}[k]),
+        borderWidth: 0,
+        stack: "sev"
+      }));
+
+      // ------- Departments -------
+      const deptMap = {};
+      rows.forEach(r => {
+        const dpt = getField(r, FIELDS.DEPARTMENT) || "Unknown";
+        deptMap[dpt] = (deptMap[dpt] || 0) + 1;
+      });
+      const deptEntries = Object.entries(deptMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const deptLabels = deptEntries.map(([k])=>k);
+      const deptValues = deptEntries.map(([_,v])=>v);
+
+      drawCharts({ sevLabels, sevValues, monthlyLabels, monthlyValues, binLabels, binCounts, stackedLabels, stackedDatasets, deptLabels, deptValues });
+    }
+
+    function drawCharts(opts) {
+      const { sevLabels, sevValues, monthlyLabels, monthlyValues, binLabels, binCounts, stackedLabels, stackedDatasets, deptLabels, deptValues } = opts;
+      const pieColors = ["#134e4a","#0ea5a4","#2dd4bf","#99f6e4","#e2e8f0"];
+
+      // destroy old instances
+      for (const key of Object.keys(charts)) {
+        if (charts[key]) { charts[key].destroy(); charts[key] = null; }
+      }
+
+      charts.severity = new Chart(document.getElementById('chartSeverity'), {
+        type: 'doughnut',
+        data: { labels: sevLabels, datasets: [{ data: sevValues, backgroundColor: pieColors }] },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+
+      charts.monthly = new Chart(document.getElementById('chartMonthly'), {
+        type: 'line',
+        data: {
+          labels: monthlyLabels,
+          datasets: [{
+            label: 'Incidents',
+            data: monthlyValues,
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0ea5a4',
+            borderWidth: 2, pointRadius: 0, tension: 0.3
+          }]
+        },
+        options: { scales: { y: { ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
+      });
+
+      charts.mttr = new Chart(document.getElementById('chartMTTR'), {
+        type: 'bar',
+        data: {
+          labels: binLabels,
+          datasets: [{
+            label: 'Incidents',
+            data: binCounts,
+            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0ea5a4',
+            borderRadius: 6
+          }]
+        },
+        options: { scales: { y: { ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
+      });
+
+      charts.stacked = new Chart(document.getElementById('chartStacked'), {
+        type: 'bar',
+        data: { labels: stackedLabels, datasets: stackedDatasets },
+        options: {
+          responsive: true,
+          scales: { x: { stacked: true }, y: { stacked: true, ticks: { precision: 0 } } },
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      charts.dept = new Chart(document.getElementById('chartDept'), {
+        type: 'bar',
+        data: {
+          labels: deptLabels,
+          datasets: [{
+            label: 'Incidents',
+            data: deptValues,
+            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#0ea5a4',
+            borderRadius: 6
+          }]
+        },
+        options: { indexAxis: 'y', scales: { x: { ticks: { precision: 0 } } }, plugins: { legend: { display: false } } }
+      });
+    }
+
+    // simple PNG downloader
+    function downloadChart(which){
+      const map = { severity:'chartSeverity', monthly:'chartMonthly', mttr:'chartMTTR', stacked:'chartStacked', dept:'chartDept' };
+      const id = map[which];
+      if(!id) return;
+      const link = document.createElement('a');
+      link.download = `${which}.png`;
+      link.href = document.getElementById(id).toDataURL('image/png', 1.0);
+      link.click();
+    }
+    window.downloadChart = downloadChart;
+  </script>
+</body>
+</html>
+
